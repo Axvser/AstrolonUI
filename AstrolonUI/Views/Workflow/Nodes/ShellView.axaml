@@ -1,0 +1,155 @@
+<local:NodeViewBase xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="350"
+                    x:Class="AstrolonUI.ShellView"
+                    xmlns:local="using:AstrolonUI"
+                    xmlns:vm="using:AstrolonUI.ViewModels"
+                    x:DataType="vm:ShellConfigViewModel"
+                    xmlns:behaviors="using:VeloxDev.WorkflowSystem.AttachedBehaviors"
+                    behaviors:WorkflowSlotLayoutBehavior.IsEnabled="True"
+                    behaviors:WorkflowSlotLayoutBehavior.SlotNames="PART_InputSlot,PART_OutputSlot"
+                    behaviors:WorkflowSlotLayoutBehavior.CoordinateHostName="PART_Canvas">
+
+    <Border CornerRadius="6" BoxShadow="0 2 12 rgba(0,0,0,0.25)">
+        <Grid RowDefinitions="32,*,12">
+            <Border Grid.Row="0"
+                    Background="{Binding $parent[local:NodeViewBase].HeadBackground}"
+                    CornerRadius="6,6,0,0"
+                    behaviors:WorkflowNodeDragBehavior.CoordinateHostName="PART_Canvas"
+                    behaviors:WorkflowNodeDragBehavior.IsEnabled="True">
+                <TextBlock Text="{Binding Name}"
+                           Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                           FontWeight="Bold"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Border>
+
+            <Grid Grid.Row="1" Background="{Binding $parent[local:NodeViewBase].HeadBackground}">
+                <Grid ColumnDefinitions="16,*,16">
+                    <local:SlotView x:Name="PART_InputSlot"
+                                    Grid.Column="0"
+                                    Width="14" Height="14"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Margin="0,8,0,0"
+                                    Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                                    DataContext="{Binding InputSlot}" />
+
+                    <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*" Margin="8,0,8,0">
+                        <Border Grid.Row="0"
+                                BorderBrush="{Binding $parent[local:NodeViewBase].HeadBackground}"
+                                BorderThickness="1.6"
+                                CornerRadius="4"
+                                Padding="6,4"
+                                Margin="0,0,0,6">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <TextBlock Grid.Column="0"
+                                           Text="Path"
+                                           Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,6,0"/>
+                                <TextBox Grid.Column="1"
+                                         Text="{Binding ExecutionPath, Mode=TwoWay}"
+                                         VerticalContentAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="1"
+                                BorderBrush="{Binding $parent[local:NodeViewBase].HeadBackground}"
+                                BorderThickness="1.6"
+                                CornerRadius="4"
+                                Padding="6,4"
+                                Margin="0,0,0,6">
+                            <Grid ColumnDefinitions="Auto,*">
+                                <TextBlock Grid.Column="0"
+                                           Text="Wrap"
+                                           Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           Margin="0,0,6,0"/>
+                                <TextBox Grid.Column="1"
+                                         Text="{Binding Wrap.Value, Mode=TwoWay}"
+                                         VerticalContentAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Row="2"
+                                BorderBrush="{Binding $parent[local:NodeViewBase].HeadBackground}"
+                                BorderThickness="1.6"
+                                CornerRadius="4"
+                                Padding="6,4">
+                            <Grid RowDefinitions="30,*">
+                                <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Column="0"
+                                               Text="Arguments"
+                                               Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center"/>
+                                    <Border Grid.Column="1" VerticalAlignment="Center">
+                                        <Viewbox HorizontalAlignment="Center" VerticalAlignment="Center">
+                                            <Button Content="➕"
+                                                    Background="{Binding $parent[local:NodeViewBase].HeadBackground}"
+                                                    Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                                                    Padding="0"
+                                                    Command="{Binding AddArgumentsCommand}"/>
+                                        </Viewbox>
+                                    </Border>
+                                </Grid>
+
+                                <ScrollViewer Grid.Row="1" MaxHeight="140" HorizontalScrollBarVisibility="Auto">
+                                    <ItemsControl ItemsSource="{Binding Arguments}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="Transparent" CornerRadius="3" Padding="4,2" Margin="0,1">
+                                                    <Grid ColumnDefinitions="Auto,*">
+                                                        <TextBox Grid.Column="1"
+                                                                 Text="{Binding Value, Mode=TwoWay}"
+                                                                 VerticalContentAlignment="Center"
+                                                                 FontSize="11"
+                                                                 FontFamily="Consolas"/>
+                                                        <Border Grid.Column="0" VerticalAlignment="Center">
+                                                            <Viewbox HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                                <Button Content="❌"
+                                                                        Background="{Binding $parent[local:NodeViewBase].HeadBackground}"
+                                                                        Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                                                                        Padding="0"
+                                                                        Command="{Binding DeleteCommand}"
+                                                                        CommandParameter="{Binding}"/>
+                                                            </Viewbox>
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <local:SlotView x:Name="PART_OutputSlot"
+                                    Grid.Column="2"
+                                    Width="14" Height="14"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Margin="0,8,0,0"
+                                    Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                                    DataContext="{Binding OutputSlot}" />
+                </Grid>
+            </Grid>
+
+            <Border Grid.Row="2"
+                    Background="{Binding $parent[local:NodeViewBase].HeadBackground}"
+                    CornerRadius="0,0,6,6"/>
+        </Grid>
+    </Border>
+</local:NodeViewBase>
+
+

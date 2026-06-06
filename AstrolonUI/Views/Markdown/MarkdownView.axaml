@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:AstrolonUI.ViewModels"
+             mc:Ignorable="d"
+             d:DesignWidth="420"
+             d:DesignHeight="260"
+             x:Class="AstrolonUI.MarkdownView"
+             x:DataType="vm:MarkdownDocumentViewModel">
+    <ScrollViewer x:Name="DisplayPanel"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Auto"
+                  IsScrollChainingEnabled="False">
+        <Grid MinWidth="{Binding #DisplayPanel.Viewport.Width}"
+              HorizontalAlignment="Stretch">
+            <ItemsControl x:Name="DisplayItems"
+                          HorizontalAlignment="Stretch">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </Grid>
+    </ScrollViewer>
+</UserControl>
+
+

@@ -1,0 +1,63 @@
+<local:NodeViewBase xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    mc:Ignorable="d" d:DesignWidth="260" d:DesignHeight="160"
+                    x:Class="AstrolonUI.MathView"
+                    xmlns:local="using:AstrolonUI"
+                    xmlns:vm="using:AstrolonUI.ViewModels"
+                    x:DataType="vm:MathViewModel"
+                    xmlns:behaviors="using:VeloxDev.WorkflowSystem.AttachedBehaviors"
+                    behaviors:WorkflowSlotLayoutBehavior.IsEnabled="True"
+                    behaviors:WorkflowSlotLayoutBehavior.SlotNames="PART_InputSlot,PART_OutputSlot"
+                    behaviors:WorkflowSlotLayoutBehavior.CoordinateHostName="PART_Canvas">
+    <Border CornerRadius="6" BoxShadow="0 2 12 rgba(0,0,0,0.25)">
+        <Grid RowDefinitions="32,*">
+            <Border Grid.Row="0"
+                    Background="{Binding $parent[local:NodeViewBase].HeadBackground}"
+                    CornerRadius="6,6,0,0"
+                    behaviors:WorkflowNodeDragBehavior.CoordinateHostName="PART_Canvas"
+                    behaviors:WorkflowNodeDragBehavior.IsEnabled="True">
+                <TextBlock Text="{Binding Name}"
+                           Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                           FontWeight="Bold"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Border>
+
+            <Grid Grid.Row="1" Background="{Binding $parent[local:NodeViewBase].HeadBackground}" ColumnDefinitions="18,*,18">
+                <local:SlotView x:Name="PART_InputSlot"
+                                Grid.Column="0"
+                                Width="14" Height="14"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                                DataContext="{Binding InputSlot}" />
+
+                <StackPanel Grid.Column="1" Margin="10,8" Spacing="6">
+                    <ComboBox ItemsSource="{Binding OperationOptions}"
+                              SelectedItem="{Binding Operation, Mode=TwoWay}"/>
+                    <TextBlock Text="{Binding LastCalculationId, StringFormat=Id: {0}}"
+                               Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                               FontSize="11"
+                               TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding WaitingParameterCount, StringFormat=Params: {0}}"
+                               Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                               FontSize="11"/>
+                    <TextBlock Text="{Binding LastResult, StringFormat=Result: {0}}"
+                               Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                               FontSize="11"/>
+                </StackPanel>
+
+                <local:SlotView x:Name="PART_OutputSlot"
+                                Grid.Column="2"
+                                Width="14" Height="14"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                                DataContext="{Binding OutputSlot}" />
+            </Grid>
+        </Grid>
+    </Border>
+</local:NodeViewBase>

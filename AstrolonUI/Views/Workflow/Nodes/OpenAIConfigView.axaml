@@ -1,0 +1,64 @@
+<local:NodeViewBase xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    mc:Ignorable="d" d:DesignWidth="320" d:DesignHeight="180"
+                    x:Class="AstrolonUI.OpenAIConfigView"
+                    xmlns:local="using:AstrolonUI"
+                    xmlns:vm="using:AstrolonUI.ViewModels"
+                    x:DataType="vm:OpenAIConfigViewModel"
+                    xmlns:behaviors="using:VeloxDev.WorkflowSystem.AttachedBehaviors"
+                    behaviors:WorkflowSlotLayoutBehavior.IsEnabled="True"
+                    behaviors:WorkflowSlotLayoutBehavior.SlotNames="PART_OutputSlot"
+                    behaviors:WorkflowSlotLayoutBehavior.CoordinateHostName="PART_Canvas">
+    <Border CornerRadius="6" BoxShadow="0 2 12 rgba(0,0,0,0.25)">
+        <Grid RowDefinitions="32,*,34">
+            <Border Grid.Row="0"
+                    Background="{Binding $parent[local:NodeViewBase].HeadBackground}"
+                    CornerRadius="6,6,0,0"
+                    behaviors:WorkflowNodeDragBehavior.CoordinateHostName="PART_Canvas"
+                    behaviors:WorkflowNodeDragBehavior.IsEnabled="True">
+                <TextBlock Text="{Binding Name}"
+                           Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                           FontWeight="Bold"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Border>
+
+            <Grid Grid.Row="1" Background="{Binding $parent[local:NodeViewBase].HeadBackground}" ColumnDefinitions="*,18">
+                <StackPanel Grid.Column="0" Margin="12,8" Spacing="6">
+                    <TextBox PlaceholderText="API key env"
+                             Text="{Binding EnvironmentVariableName, Mode=TwoWay}"/>
+                    <TextBox PlaceholderText="Endpoint"
+                             Text="{Binding Endpoint, Mode=TwoWay}"/>
+                    <TextBox PlaceholderText="Model"
+                             Text="{Binding Model, Mode=TwoWay}"/>
+                </StackPanel>
+                <local:SlotView x:Name="PART_OutputSlot"
+                                Grid.Column="1"
+                                Width="14" Height="14"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                                DataContext="{Binding OutputSlot}" />
+            </Grid>
+
+            <Border Grid.Row="2"
+                    Background="{Binding $parent[local:NodeViewBase].HeadBackground}"
+                    CornerRadius="0,0,6,6"
+                    BorderThickness="0,0.5,0,0"
+                    BorderBrush="#DDa0ff40">
+                <Button Content="Apply"
+                        HorizontalAlignment="Left"
+                        Command="{Binding WorkCommand}"
+                        Background="{Binding $parent[local:NodeViewBase].HeadBackground}"
+                        Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                        FontWeight="Bold"
+                        Margin="18,3,0,3"
+                        Padding="10,4"/>
+            </Border>
+        </Grid>
+    </Border>
+</local:NodeViewBase>
+

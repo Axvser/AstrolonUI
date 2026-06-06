@@ -1,0 +1,71 @@
+<local:NodeViewBase xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    mc:Ignorable="d" d:DesignWidth="280" d:DesignHeight="140"
+                    x:Class="AstrolonUI.ShellAggregateView"
+                    xmlns:local="using:AstrolonUI"
+                    xmlns:vm="using:AstrolonUI.ViewModels"
+                    x:DataType="vm:ShellAggregateViewModel"
+                    xmlns:behaviors="using:VeloxDev.WorkflowSystem.AttachedBehaviors"
+                    behaviors:WorkflowSlotLayoutBehavior.IsEnabled="True"
+                    behaviors:WorkflowSlotLayoutBehavior.SlotNames="PART_InputSlot"
+                    behaviors:WorkflowSlotLayoutBehavior.SlotEnumeratorNames="PART_OutputSlots"
+                    behaviors:WorkflowSlotLayoutBehavior.CoordinateHostName="PART_Canvas">
+    <Border CornerRadius="6" BoxShadow="0 2 12 rgba(0,0,0,0.25)">
+        <Grid RowDefinitions="32,*,4">
+            <Border Grid.Row="0"
+                    Background="{Binding $parent[local:NodeViewBase].HeadBackground}"
+                    CornerRadius="6,6,0,0"
+                    behaviors:WorkflowNodeDragBehavior.CoordinateHostName="PART_Canvas"
+                    behaviors:WorkflowNodeDragBehavior.IsEnabled="True">
+                <TextBlock Text="{Binding Name}"
+                           Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                           FontWeight="Bold"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Border>
+
+            <Grid Grid.Row="1" Background="{Binding $parent[local:NodeViewBase].HeadBackground}" ColumnDefinitions="18,*,Auto">
+                <local:SlotView x:Name="PART_InputSlot"
+                                Grid.Column="0"
+                                Width="14" Height="14"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                                DataContext="{Binding InputSlot}" />
+
+                <ItemsControl x:Name="PART_OutputSlots"
+                              Grid.Column="2"
+                              ItemsSource="{Binding OutputSlots.Items}"
+                              VerticalAlignment="Center"
+                              Margin="0,6,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnDefinitions="Auto,Auto" Margin="0,0,0,4" HorizontalAlignment="Right">
+                                <TextBlock Grid.Column="0"
+                                           Text="{Binding Name}"
+                                           Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                                           FontSize="10"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"
+                                           HorizontalAlignment="Right"
+                                           Margin="0,0,4,0"/>
+                                <local:SlotView Grid.Column="1"
+                                                Width="14" Height="14"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                                                DataContext="{Binding Slot}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
+
+            <local:ShellRunningIndicator Grid.Row="2" IsRunning="{Binding IsRunning}"/>
+        </Grid>
+    </Border>
+</local:NodeViewBase>
+

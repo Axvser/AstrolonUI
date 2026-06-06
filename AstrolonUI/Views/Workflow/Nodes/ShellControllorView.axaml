@@ -1,0 +1,54 @@
+<local:NodeViewBase xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    mc:Ignorable="d" d:DesignWidth="240" d:DesignHeight="120"
+                    x:Class="AstrolonUI.ShellControllorView"
+                    xmlns:local="using:AstrolonUI"
+                    xmlns:vm="using:AstrolonUI.ViewModels"
+                    x:DataType="vm:ShellControllorViewModel"
+                    xmlns:behaviors="using:VeloxDev.WorkflowSystem.AttachedBehaviors"
+                    behaviors:WorkflowSlotLayoutBehavior.IsEnabled="True"
+                    behaviors:WorkflowSlotLayoutBehavior.SlotNames="PART_OutputSlot"
+                    behaviors:WorkflowSlotLayoutBehavior.CoordinateHostName="PART_Canvas">
+    <Border CornerRadius="6" BoxShadow="0 2 12 rgba(0,0,0,0.25)">
+        <Grid RowDefinitions="32,*">
+            <Border Grid.Row="0"
+                    Background="{Binding $parent[local:NodeViewBase].HeadBackground}"
+                    CornerRadius="6,6,0,0"
+                    behaviors:WorkflowNodeDragBehavior.CoordinateHostName="PART_Canvas"
+                    behaviors:WorkflowNodeDragBehavior.IsEnabled="True">
+                <TextBlock Text="{Binding Name}"
+                           Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                           FontWeight="Bold"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+            </Border>
+
+            <Grid Grid.Row="1" Background="{Binding $parent[local:NodeViewBase].HeadBackground}" ColumnDefinitions="*,18">
+                <StackPanel Grid.Column="0" Margin="12,8,8,8" Spacing="6">
+                    <ComboBox ItemsSource="{Binding PipelineOptions}"
+                              SelectedItem="{Binding Pipeline, Mode=TwoWay}"
+                              FontSize="11"
+                              MinWidth="120"/>
+                    <Button Content="Start"
+                            HorizontalAlignment="Left"
+                            Command="{Binding WorkCommand}"
+                            Background="{Binding $parent[local:NodeViewBase].HeadBackground}"
+                            Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                            FontWeight="Bold"
+                            Padding="10,4"/>
+                </StackPanel>
+                <local:SlotView x:Name="PART_OutputSlot"
+                                Grid.Column="1"
+                                Width="14" Height="14"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+                                DataContext="{Binding OutputSlot}" />
+            </Grid>
+        </Grid>
+    </Border>
+</local:NodeViewBase>
+

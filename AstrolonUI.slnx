@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Configs/">
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="AstrolonUI.Android/AstrolonUI.Android.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="AstrolonUI.Browser/AstrolonUI.Browser.csproj" />
+  <Project Path="AstrolonUI.Desktop/AstrolonUI.Desktop.csproj" />
+  <Project Path="AstrolonUI.iOS/AstrolonUI.iOS.csproj">
+    <Deploy />
+  </Project>
+  <Project Path="AstrolonUI/AstrolonUI.csproj" />
+</Solution>

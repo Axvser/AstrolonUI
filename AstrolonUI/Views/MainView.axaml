@@ -1,0 +1,283 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="using:AstrolonUI.ViewModels"
+			 xmlns:views="using:AstrolonUI"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 x:Class="AstrolonUI.Views.MainView"
+			 x:DataType="vm:MainViewModel">
+	<Grid ColumnDefinitions="360,5,*">
+		<Grid Grid.Column="0">
+			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+				<StackPanel Orientation="Vertical">
+					<Grid ColumnDefinitions="*,*,*" Margin="0,0,0,8">
+						<Button Grid.Column="0" Content="Undo" Height="34" Command="{Binding Tree.UndoCommand}" />
+						<Button Grid.Column="1" Content="Redo" Height="34" Command="{Binding Tree.RedoCommand}" />
+						<Button Grid.Column="2" Content="Theme" Height="34" Command="{Binding ReverseThemeCommand}"/>
+					</Grid>
+					<Border Padding="10" Background="#202020" BorderBrush="#4c4c4c" BorderThickness="1" CornerRadius="4">
+						<StackPanel Spacing="6">
+							<TextBlock Text="工具" Foreground="#7ec8ff" FontWeight="Bold"/>
+							<TreeView ItemsSource="{Binding Tree.NodeToolGroups}" MaxHeight="220">
+								<TreeView.DataTemplates>
+									<TreeDataTemplate DataType="vm:NodeToolGroupViewModel" ItemsSource="{Binding Tools}">
+										<TextBlock Text="{Binding Name}" Foreground="#d8d8d8" FontWeight="SemiBold"/>
+									</TreeDataTemplate>
+									<DataTemplate DataType="vm:NodeToolViewModel">
+										<Border Padding="6,4" CornerRadius="3" Background="#12000000" PointerPressed="NodeTool_PointerPressed">
+											<StackPanel>
+												<TextBlock Text="{Binding Name}" Foreground="White" FontWeight="SemiBold"/>
+												<TextBlock Text="{Binding Description}" Foreground="#b8b8b8" FontSize="11" TextWrapping="Wrap" MaxWidth="310"/>
+											</StackPanel>
+										</Border>
+									</DataTemplate>
+								</TreeView.DataTemplates>
+							</TreeView>
+						</StackPanel>
+					</Border>
+
+					<!-- Agent 模型 -->
+					<Border Margin="0,12,0,0" Padding="10" Background="#202020" BorderBrush="#4c4c4c" BorderThickness="1" CornerRadius="4">
+						<StackPanel Spacing="7">
+							<TextBlock Text="Agent 模型" Foreground="#7ec8ff" FontWeight="Bold"/>
+
+							<Grid ColumnDefinitions="88,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="6">
+								<TextBlock Grid.Row="0"
+										   Grid.Column="0"
+										   Text="API Key 环境变量"
+										   Foreground="#b8b8b8"
+										   FontSize="11"
+										   VerticalAlignment="Center"/>
+								<TextBox Grid.Row="0"
+										 Grid.Column="1"
+										 Text="{Binding Tree.EnvironmentVariableName, Mode=TwoWay}"
+										 PlaceholderText="OPENAI_API_KEY"
+										 FontSize="11"/>
+
+								<TextBlock Grid.Row="1"
+										   Grid.Column="0"
+										   Text="Endpoint"
+										   Foreground="#b8b8b8"
+										   FontSize="11"
+										   VerticalAlignment="Center"/>
+								<TextBox Grid.Row="1"
+										 Grid.Column="1"
+										 Text="{Binding Tree.Endpoint, Mode=TwoWay}"
+										 PlaceholderText="https://api.openai.com/v1"
+										 FontSize="11"/>
+
+								<TextBlock Grid.Row="2"
+										   Grid.Column="0"
+										   Text="Model"
+										   Foreground="#b8b8b8"
+										   FontSize="11"
+										   VerticalAlignment="Center"/>
+								<TextBox Grid.Row="2"
+										 Grid.Column="1"
+										 Text="{Binding Tree.Model, Mode=TwoWay}"
+										 PlaceholderText="gpt-4.1-mini"
+										 FontSize="11"/>
+							</Grid>
+						</StackPanel>
+					</Border>
+
+					<!-- Agent 对话 -->
+					<Border Margin="0,12,0,0" Padding="10" Background="Transparent" BorderBrush="#4c4c4c" BorderThickness="1" CornerRadius="4">
+						<StackPanel Spacing="6">
+							<Grid ColumnDefinitions="*,Auto">
+								<TextBlock Text="Agent 对话" Foreground="#7ec8ff" FontWeight="Bold"/>
+								<ToggleSwitch Grid.Column="1"
+											  IsChecked="{Binding Tree.UseStreamingAgentResponse}"
+											  OnContent="流式"
+											  OffContent="普通"
+											  FontSize="11"
+											  Margin="0,-6,0,-6"/>
+							</Grid>
+							<Border MaxHeight="300"
+									Background="#181818"
+									BorderBrush="#303030"
+									BorderThickness="1"
+									CornerRadius="4"
+									Padding="8">
+								<views:MarkdownView DataContext="{Binding Tree.AgentTranscriptDocument}"/>
+							</Border>
+							<Grid ColumnDefinitions="*,Auto">
+								<TextBox x:Name="AgentInput"
+										 Grid.Column="0"
+										 IsEnabled="{Binding !Tree.HasPendingAgentInteraction}"
+										 AcceptsReturn="False"/>
+								<Button Grid.Column="1"
+										Content="发送"
+										Margin="4,0,0,0"
+										IsVisible="{Binding !Tree.IsAgentRequestRunning}"
+										IsEnabled="{Binding !Tree.HasPendingAgentInteraction}"
+										Click="Ask_Click"/>
+								<Button Grid.Column="1"
+										Content="取消"
+										Margin="4,0,0,0"
+										IsVisible="{Binding Tree.IsAgentRequestRunning}"
+										Command="{Binding Tree.CancelAgentRequestCommand}"/>
+							</Grid>
+						</StackPanel>
+					</Border>
+
+					<!-- Agent 检查点 -->
+					<Border Margin="0,12,0,0" Padding="10" Background="#202020" BorderBrush="#4c4c4c" BorderThickness="1" CornerRadius="4">
+						<StackPanel Spacing="7">
+							<Grid ColumnDefinitions="*,Auto">
+								<TextBlock Text="检查点" Foreground="#7ec8ff" FontWeight="Bold"/>
+								<TextBlock Grid.Column="1"
+										   Text="{Binding Tree.AgentCheckpoints.Count}"
+										   Foreground="#8f8f8f"
+										   FontSize="11"/>
+							</Grid>
+							<ItemsControl ItemsSource="{Binding Tree.AgentCheckpoints}">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<StackPanel Spacing="4"/>
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+								<ItemsControl.ItemTemplate>
+									<DataTemplate DataType="vm:AgentCheckpointViewModel">
+										<Expander IsExpanded="False"
+												  Background="#181818"
+												  HorizontalAlignment="Stretch">
+											<Expander.Header>
+												<TextBlock Text="{Binding CreatedAtText}"
+														   Foreground="#b8b8b8"
+														   FontSize="11"/>
+											</Expander.Header>
+											<StackPanel Spacing="7" Margin="8,2,8,8">
+												<TextBlock Text="{Binding Summary}"
+														   Foreground="#d8d8d8"
+														   TextWrapping="Wrap"/>
+												<Grid ColumnDefinitions="*,Auto">
+													<TextBlock Text="{Binding SnapshotSizeText}"
+															   Foreground="#8f8f8f"
+															   FontSize="10"
+															   VerticalAlignment="Center"/>
+													<Button Grid.Column="1"
+															Content="切换到此状态"
+															Click="RestoreCheckpoint_Click"/>
+												</Grid>
+											</StackPanel>
+										</Expander>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</StackPanel>
+					</Border>
+				</StackPanel>
+			</ScrollViewer>
+		</Grid>
+
+		<GridSplitter Grid.Column="1" Background="#01000000"/>
+
+		<Grid Grid.Column="2">
+			<views:TreeView DataContext="{Binding Tree}"
+							Background="#1e1e1e"/>
+
+			<Grid IsVisible="{Binding Tree.HasPendingAgentInteraction}">
+					<Border IsVisible="{Binding Tree.HasPendingAgentSelection}"
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Center"
+							MaxWidth="520"
+							Margin="24"
+							Background="#F2181818"
+							BorderBrush="#4c4c4c"
+							BorderThickness="1"
+							CornerRadius="4"
+							Padding="16">
+						<StackPanel Spacing="10">
+							<TextBlock Text="AI 发起选择"
+									   Foreground="#7ec8ff"
+									   FontWeight="Bold"
+									   FontSize="16"/>
+							<TextBlock Text="{Binding Tree.AgentSelectionPrompt}"
+									   Foreground="#d8d8d8"
+									   TextWrapping="Wrap"/>
+							<ScrollViewer MaxHeight="280"
+										  VerticalScrollBarVisibility="Auto">
+								<ItemsControl ItemsSource="{Binding Tree.AgentSelectionOptions}">
+									<ItemsControl.ItemsPanel>
+										<ItemsPanelTemplate>
+											<StackPanel Spacing="6"/>
+										</ItemsPanelTemplate>
+									</ItemsControl.ItemsPanel>
+									<ItemsControl.ItemTemplate>
+										<DataTemplate DataType="vm:AgentSelectionOptionViewModel">
+											<RadioButton GroupName="AgentSelectionOptions"
+														 Content="{Binding Text}"
+														 IsChecked="{Binding IsSelected, Mode=TwoWay}"/>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</ScrollViewer>
+							<StackPanel Orientation="Horizontal"
+										Spacing="6"
+										HorizontalAlignment="Right">
+								<Button Content="取消"
+										Command="{Binding Tree.CancelAgentSelectionCommand}"/>
+								<Button Content="提交选择"
+										Command="{Binding Tree.SubmitAgentSelectionCommand}"/>
+							</StackPanel>
+						</StackPanel>
+					</Border>
+
+					<Border IsVisible="{Binding Tree.HasPendingAgentConfirmation}"
+							HorizontalAlignment="Stretch"
+							VerticalAlignment="Center"
+							MaxWidth="520"
+							Margin="24"
+							Background="#F2181818"
+							BorderBrush="#66552d"
+							BorderThickness="1"
+							CornerRadius="4"
+							Padding="16">
+						<StackPanel Spacing="10">
+							<TextBlock Text="AI 操作确认"
+									   Foreground="#ffd166"
+									   FontWeight="Bold"
+									   FontSize="16"/>
+							<Border Background="#2a1f00"
+									BorderBrush="#66552d"
+									BorderThickness="1"
+									CornerRadius="3"
+									Padding="8,6">
+								<TextBlock Text="{Binding Tree.AgentConfirmationOperationKey}"
+										   Foreground="#ffd166"
+										   FontFamily="Consolas"
+										   FontSize="11"
+										   TextWrapping="Wrap"/>
+							</Border>
+							<TextBlock Text="{Binding Tree.AgentConfirmationDescription}"
+									   Foreground="#d8d8d8"
+									   TextWrapping="Wrap"/>
+							<StackPanel Spacing="6">
+								<RadioButton GroupName="AgentConfirmationOptions"
+											 Content="拒绝"
+											 IsChecked="{Binding Tree.AgentConfirmationDenySelected, Mode=TwoWay}"/>
+								<RadioButton GroupName="AgentConfirmationOptions"
+											 Content="仅同意一次"
+											 IsChecked="{Binding Tree.AgentConfirmationAllowOnceSelected, Mode=TwoWay}"/>
+								<RadioButton GroupName="AgentConfirmationOptions"
+											 Content="本次会话始终同意"
+											 IsChecked="{Binding Tree.AgentConfirmationAllowAlwaysSelected, Mode=TwoWay}"/>
+							</StackPanel>
+							<Button Content="提交决定"
+									HorizontalAlignment="Right"
+									Command="{Binding Tree.SubmitAgentConfirmationCommand}"/>
+						</StackPanel>
+					</Border>
+			</Grid>
+		</Grid>
+	</Grid>
+</UserControl>
+
+
+
+
+
+
+
