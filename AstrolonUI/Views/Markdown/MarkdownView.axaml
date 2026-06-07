@@ -10,9 +10,9 @@
              x:DataType="vm:MarkdownDocumentViewModel">
     <ScrollViewer x:Name="DisplayPanel"
                   VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
                   IsScrollChainingEnabled="False">
-        <Grid MinWidth="{Binding #DisplayPanel.Viewport.Width}"
+        <Grid Width="{Binding #DisplayPanel.Viewport.Width}"
               HorizontalAlignment="Stretch">
             <ItemsControl x:Name="DisplayItems"
                           HorizontalAlignment="Stretch">

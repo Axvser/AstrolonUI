@@ -7,38 +7,127 @@
 			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 x:Class="AstrolonUI.Views.MainView"
 			 x:DataType="vm:MainViewModel">
-	<Grid ColumnDefinitions="360,5,*">
-		<Grid Grid.Column="0">
-			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-				<StackPanel Orientation="Vertical">
-					<Grid ColumnDefinitions="*,*,*" Margin="0,0,0,8">
-						<Button Grid.Column="0" Content="Undo" Height="34" Command="{Binding Tree.UndoCommand}" />
-						<Button Grid.Column="1" Content="Redo" Height="34" Command="{Binding Tree.RedoCommand}" />
-						<Button Grid.Column="2" Content="Theme" Height="34" Command="{Binding ReverseThemeCommand}"/>
-					</Grid>
-					<Border Padding="10" Background="#202020" BorderBrush="#4c4c4c" BorderThickness="1" CornerRadius="4">
-						<StackPanel Spacing="6">
-							<TextBlock Text="工具" Foreground="#7ec8ff" FontWeight="Bold"/>
-							<TreeView ItemsSource="{Binding Tree.NodeToolGroups}" MaxHeight="220">
+	<Grid RowDefinitions="Auto,*">
+		<Border Grid.Row="0"
+				Background="Transparent"
+				BorderBrush="#4c4c4c"
+				BorderThickness="0,0,0,1"
+				Padding="4,3">
+			<Grid ColumnDefinitions="Auto,Auto,Auto,Auto,16,Auto,180,*"
+				  VerticalAlignment="Center">
+				<Menu Grid.Column="0"
+					  Background="Transparent"
+					  VerticalAlignment="Center">
+					<MenuItem Header="文件">
+						<MenuItem Header="新建工作区"
+								  Click="NewWorkflow_Click"/>
+						<MenuItem Header="打开..."
+								  Click="OpenWorkflow_Click"/>
+						<Separator/>
+						<MenuItem Header="保存"
+								  Click="SaveWorkflow_Click"/>
+						<MenuItem Header="另存为..."
+								  Click="SaveWorkflowAs_Click"/>
+					</MenuItem>
+				</Menu>
+
+				<Button Grid.Column="1"
+						Content="撤销"
+						MinWidth="56"
+						Command="{Binding Tree.UndoCommand}"/>
+				<Button Grid.Column="2"
+						Content="重做"
+						MinWidth="56"
+						Command="{Binding Tree.RedoCommand}"/>
+				<Button Grid.Column="3"
+						Content="主题"
+						MinWidth="56"
+						Command="{Binding ReverseThemeCommand}"/>
+
+				<TextBlock Grid.Column="5"
+						   Text="工作区"
+						   VerticalAlignment="Center"
+						   Margin="0,0,8,0"/>
+				<ComboBox Grid.Column="6"
+						  ItemsSource="{Binding Workspaces}"
+						  SelectedItem="{Binding Tree, Mode=TwoWay}"
+						  SelectionChanged="WorkspaceSelectionChanged"
+						  HorizontalAlignment="Stretch">
+					<ComboBox.ItemTemplate>
+						<DataTemplate DataType="vm:TreeViewModel">
+							<TextBlock Text="{Binding WorkspaceName}"
+									   TextTrimming="CharacterEllipsis"
+									   ToolTip.Tip="{Binding LocalPath}"/>
+						</DataTemplate>
+					</ComboBox.ItemTemplate>
+				</ComboBox>
+
+				<TextBlock Grid.Column="7"
+						   Text="{Binding StatusMessage}"
+						   Opacity="0.65"
+						   VerticalAlignment="Center"
+						   HorizontalAlignment="Right"
+						   TextTrimming="CharacterEllipsis"
+						   MaxWidth="320"
+						   Margin="12,0,6,0"/>
+			</Grid>
+		</Border>
+
+		<Grid Grid.Row="1" ColumnDefinitions="360,5,*">
+			<Grid Grid.Column="0"
+				  RowDefinitions="2*,Auto,4*,2*"
+				  RowSpacing="8">
+					<Border Grid.Row="0"
+							Padding="10"
+							Background="Transparent"
+							BorderBrush="#4c4c4c"
+							BorderThickness="1"
+							CornerRadius="4">
+						<Grid RowDefinitions="Auto,*"
+							  RowSpacing="6">
+							<TextBlock Text="节点" Foreground="#7ec8ff" FontWeight="Bold"/>
+							<TreeView Grid.Row="1"
+									  ItemsSource="{Binding Tree.NodeToolGroups}"
+									  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+									  ScrollViewer.VerticalScrollBarVisibility="Auto"
+									  HorizontalAlignment="Stretch"
+									  VerticalAlignment="Stretch">
 								<TreeView.DataTemplates>
 									<TreeDataTemplate DataType="vm:NodeToolGroupViewModel" ItemsSource="{Binding Tools}">
-										<TextBlock Text="{Binding Name}" Foreground="#d8d8d8" FontWeight="SemiBold"/>
+										<TextBlock Text="{Binding Name}"
+												   FontWeight="SemiBold"
+												   TextWrapping="Wrap"/>
 									</TreeDataTemplate>
 									<DataTemplate DataType="vm:NodeToolViewModel">
-										<Border Padding="6,4" CornerRadius="3" Background="#12000000" PointerPressed="NodeTool_PointerPressed">
+										<Border Padding="6,4"
+												CornerRadius="3"
+												Background="Transparent"
+												HorizontalAlignment="Stretch"
+												PointerPressed="NodeTool_PointerPressed">
 											<StackPanel>
-												<TextBlock Text="{Binding Name}" Foreground="White" FontWeight="SemiBold"/>
-												<TextBlock Text="{Binding Description}" Foreground="#b8b8b8" FontSize="11" TextWrapping="Wrap" MaxWidth="310"/>
+												<TextBlock Text="{Binding Name}"
+														   FontWeight="SemiBold"
+														   TextWrapping="Wrap"/>
+												<TextBlock Text="{Binding Description}"
+														   Opacity="0.68"
+														   FontSize="11"
+														   TextWrapping="Wrap"
+														   HorizontalAlignment="Stretch"/>
 											</StackPanel>
 										</Border>
 									</DataTemplate>
 								</TreeView.DataTemplates>
 							</TreeView>
-						</StackPanel>
+						</Grid>
 					</Border>
 
 					<!-- Agent 模型 -->
-					<Border Margin="0,12,0,0" Padding="10" Background="#202020" BorderBrush="#4c4c4c" BorderThickness="1" CornerRadius="4">
+					<Border Grid.Row="1"
+							Padding="10"
+							Background="Transparent"
+							BorderBrush="#4c4c4c"
+							BorderThickness="1"
+							CornerRadius="4">
 						<StackPanel Spacing="7">
 							<TextBlock Text="Agent 模型" Foreground="#7ec8ff" FontWeight="Bold"/>
 
@@ -46,7 +135,7 @@
 								<TextBlock Grid.Row="0"
 										   Grid.Column="0"
 										   Text="API Key 环境变量"
-										   Foreground="#b8b8b8"
+										   Opacity="0.68"
 										   FontSize="11"
 										   VerticalAlignment="Center"/>
 								<TextBox Grid.Row="0"
@@ -58,7 +147,7 @@
 								<TextBlock Grid.Row="1"
 										   Grid.Column="0"
 										   Text="Endpoint"
-										   Foreground="#b8b8b8"
+										   Opacity="0.68"
 										   FontSize="11"
 										   VerticalAlignment="Center"/>
 								<TextBox Grid.Row="1"
@@ -70,7 +159,7 @@
 								<TextBlock Grid.Row="2"
 										   Grid.Column="0"
 										   Text="Model"
-										   Foreground="#b8b8b8"
+										   Opacity="0.68"
 										   FontSize="11"
 										   VerticalAlignment="Center"/>
 								<TextBox Grid.Row="2"
@@ -83,8 +172,14 @@
 					</Border>
 
 					<!-- Agent 对话 -->
-					<Border Margin="0,12,0,0" Padding="10" Background="Transparent" BorderBrush="#4c4c4c" BorderThickness="1" CornerRadius="4">
-						<StackPanel Spacing="6">
+					<Border Grid.Row="2"
+							Padding="10"
+							Background="Transparent"
+							BorderBrush="#4c4c4c"
+							BorderThickness="1"
+							CornerRadius="4">
+						<Grid RowDefinitions="Auto,*,Auto"
+							  RowSpacing="6">
 							<Grid ColumnDefinitions="*,Auto">
 								<TextBlock Text="Agent 对话" Foreground="#7ec8ff" FontWeight="Bold"/>
 								<ToggleSwitch Grid.Column="1"
@@ -94,15 +189,14 @@
 											  FontSize="11"
 											  Margin="0,-6,0,-6"/>
 							</Grid>
-							<Border MaxHeight="300"
-									Background="#181818"
-									BorderBrush="#303030"
-									BorderThickness="1"
-									CornerRadius="4"
-									Padding="8">
-								<views:MarkdownView DataContext="{Binding Tree.AgentTranscriptDocument}"/>
+
+							<Border Grid.Row="1">
+								<views:MarkdownView DataContext="{Binding Tree.AgentTranscriptDocument}"
+													AutoScrollToEnd="True"/>
 							</Border>
-							<Grid ColumnDefinitions="*,Auto">
+
+							<Grid Grid.Row="2"
+								  ColumnDefinitions="*,Auto">
 								<TextBox x:Name="AgentInput"
 										 Grid.Column="0"
 										 IsEnabled="{Binding !Tree.HasPendingAgentInteraction}"
@@ -119,66 +213,73 @@
 										IsVisible="{Binding Tree.IsAgentRequestRunning}"
 										Command="{Binding Tree.CancelAgentRequestCommand}"/>
 							</Grid>
-						</StackPanel>
+						</Grid>
 					</Border>
 
 					<!-- Agent 检查点 -->
-					<Border Margin="0,12,0,0" Padding="10" Background="#202020" BorderBrush="#4c4c4c" BorderThickness="1" CornerRadius="4">
-						<StackPanel Spacing="7">
+					<Border Grid.Row="3"
+							Padding="10"
+							Background="Transparent"
+							BorderBrush="#4c4c4c"
+							BorderThickness="1"
+							CornerRadius="4">
+						<Grid RowDefinitions="Auto,*"
+							  RowSpacing="7">
 							<Grid ColumnDefinitions="*,Auto">
 								<TextBlock Text="检查点" Foreground="#7ec8ff" FontWeight="Bold"/>
 								<TextBlock Grid.Column="1"
 										   Text="{Binding Tree.AgentCheckpoints.Count}"
-										   Foreground="#8f8f8f"
+										   Opacity="0.65"
 										   FontSize="11"/>
 							</Grid>
-							<ItemsControl ItemsSource="{Binding Tree.AgentCheckpoints}">
-								<ItemsControl.ItemsPanel>
-									<ItemsPanelTemplate>
-										<StackPanel Spacing="4"/>
-									</ItemsPanelTemplate>
-								</ItemsControl.ItemsPanel>
-								<ItemsControl.ItemTemplate>
-									<DataTemplate DataType="vm:AgentCheckpointViewModel">
-										<Expander IsExpanded="False"
-												  Background="#181818"
-												  HorizontalAlignment="Stretch">
-											<Expander.Header>
-												<TextBlock Text="{Binding CreatedAtText}"
-														   Foreground="#b8b8b8"
-														   FontSize="11"/>
-											</Expander.Header>
-											<StackPanel Spacing="7" Margin="8,2,8,8">
-												<TextBlock Text="{Binding Summary}"
-														   Foreground="#d8d8d8"
-														   TextWrapping="Wrap"/>
-												<Grid ColumnDefinitions="*,Auto">
-													<TextBlock Text="{Binding SnapshotSizeText}"
-															   Foreground="#8f8f8f"
-															   FontSize="10"
-															   VerticalAlignment="Center"/>
-													<Button Grid.Column="1"
-															Content="切换到此状态"
-															Click="RestoreCheckpoint_Click"/>
-												</Grid>
-											</StackPanel>
-										</Expander>
-									</DataTemplate>
-								</ItemsControl.ItemTemplate>
-							</ItemsControl>
-						</StackPanel>
+							<ScrollViewer Grid.Row="1"
+										  VerticalScrollBarVisibility="Auto"
+										  HorizontalScrollBarVisibility="Disabled">
+								<ItemsControl ItemsSource="{Binding Tree.AgentCheckpoints}">
+									<ItemsControl.ItemsPanel>
+										<ItemsPanelTemplate>
+											<StackPanel Spacing="4"/>
+										</ItemsPanelTemplate>
+									</ItemsControl.ItemsPanel>
+									<ItemsControl.ItemTemplate>
+										<DataTemplate DataType="vm:AgentCheckpointViewModel">
+											<Expander IsExpanded="False"
+													  Background="Transparent"
+													  HorizontalAlignment="Stretch"
+													  HorizontalContentAlignment="Stretch">
+												<Expander.Header>
+													<TextBlock Text="{Binding CreatedAtText}"
+															   Opacity="0.72"
+															   FontSize="11"/>
+												</Expander.Header>
+												<StackPanel Spacing="7" Margin="8,2,8,8">
+													<TextBlock Text="{Binding Summary}"
+															   TextWrapping="Wrap"/>
+													<Grid ColumnDefinitions="*,Auto">
+														<TextBlock Text="{Binding SnapshotSizeText}"
+																   Opacity="0.65"
+																   FontSize="10"
+																   VerticalAlignment="Center"/>
+														<Button Grid.Column="1"
+																Content="切换到此状态"
+																Click="RestoreCheckpoint_Click"/>
+													</Grid>
+												</StackPanel>
+											</Expander>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+							</ScrollViewer>
+						</Grid>
 					</Border>
-				</StackPanel>
-			</ScrollViewer>
-		</Grid>
+			</Grid>
 
-		<GridSplitter Grid.Column="1" Background="#01000000"/>
+			<GridSplitter Grid.Column="1" Background="#01000000"/>
 
-		<Grid Grid.Column="2">
-			<views:TreeView DataContext="{Binding Tree}"
-							Background="#1e1e1e"/>
+			<Grid Grid.Column="2">
+				<views:TreeView DataContext="{Binding Tree}"/>
 
-			<Grid IsVisible="{Binding Tree.HasPendingAgentInteraction}">
+				<Grid IsVisible="{Binding Tree.HasPendingAgentInteraction}">
 					<Border IsVisible="{Binding Tree.HasPendingAgentSelection}"
 							HorizontalAlignment="Stretch"
 							VerticalAlignment="Center"
@@ -270,6 +371,7 @@
 									Command="{Binding Tree.SubmitAgentConfirmationCommand}"/>
 						</StackPanel>
 					</Border>
+				</Grid>
 			</Grid>
 		</Grid>
 	</Grid>

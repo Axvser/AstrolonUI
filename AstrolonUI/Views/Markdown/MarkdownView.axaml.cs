@@ -16,14 +16,54 @@ using MdInline = Markdig.Syntax.Inlines.Inline;
 
 namespace AstrolonUI;
 
-[ThemeConfig<ObjectConverter, Dark, Light>(nameof(Background), ["#1e1e1e"], ["#ffffff"])]
-[ThemeConfig<ObjectConverter, Dark, Light>(nameof(TextForeground), ["#ffffff"], ["#1e1e1e"])]
+[ThemeConfig<ObjectConverter, Dark, Light>(nameof(ThemeBackground), ["#1e1e1e"], ["#ffffff"])]
+[ThemeConfig<ObjectConverter, Dark, Light>(nameof(ThemeTextForeground), ["#ffffff"], ["#1e1e1e"])]
 public partial class MarkdownView : UserControl
 {
     private static readonly FontFamily MonospaceFontFamily = new("Cascadia Code,Cascadia Mono,Consolas,Microsoft YaHei UI,Segoe UI,monospace");
     private static readonly MarkdownPipeline MarkdownPipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
     private readonly AvaloniaList<Control> displayBlocks = [];
     private MarkdownDocumentViewModel? document;
+    private IBrush themeBackground = Brushes.Transparent;
+    private IBrush themeTextForeground = Brushes.White;
+    private bool scrollToEndPending;
+
+    public bool UseThemeColors { get; set; } = true;
+
+    public static readonly StyledProperty<bool> AutoScrollToEndProperty =
+        AvaloniaProperty.Register<MarkdownView, bool>(nameof(AutoScrollToEnd));
+
+    public bool AutoScrollToEnd
+    {
+        get => GetValue(AutoScrollToEndProperty);
+        set => SetValue(AutoScrollToEndProperty, value);
+    }
+
+    public IBrush ThemeBackground
+    {
+        get => themeBackground;
+        set
+        {
+            themeBackground = value;
+            if (UseThemeColors)
+            {
+                Background = value;
+            }
+        }
+    }
+
+    public IBrush ThemeTextForeground
+    {
+        get => themeTextForeground;
+        set
+        {
+            themeTextForeground = value;
+            if (UseThemeColors)
+            {
+                TextForeground = value;
+            }
+        }
+    }
 
     public static readonly StyledProperty<IBrush> TextForegroundProperty =
         AvaloniaProperty.Register<MarkdownView, IBrush>(nameof(TextForeground));
@@ -45,6 +85,8 @@ public partial class MarkdownView : UserControl
         InitializeTheme();
         InitializeComponent();
         DisplayItems.ItemsSource = displayBlocks;
+        DisplayPanel.LayoutUpdated += (_, _) => CompletePendingScroll();
+        AttachedToVisualTree += (_, _) => RequestScrollToEnd();
         DataContextChanged += (_, _) => AttachDocument();
         AttachDocument();
     }
@@ -86,9 +128,16 @@ public partial class MarkdownView : UserControl
         var markdown = document?.Text;
         if (string.IsNullOrWhiteSpace(markdown))
         {
-            var emptyText = new TextBlock { Text = "No markdown", FontStyle = FontStyle.Italic, Opacity = 0.45, FontSize = 13 };
+            var emptyText = new TextBlock
+            {
+                Text = "No markdown",
+                FontStyle = FontStyle.Italic,
+                Opacity = 0.45,
+                TextWrapping = TextWrapping.Wrap
+            };
             ApplyTextForeground(emptyText);
             displayBlocks.Add(emptyText);
+            RequestScrollToEnd();
             return;
         }
 
@@ -101,6 +150,28 @@ public partial class MarkdownView : UserControl
                 displayBlocks.Add(control);
             }
         }
+
+        RequestScrollToEnd();
+    }
+
+    private void RequestScrollToEnd()
+    {
+        if (AutoScrollToEnd)
+        {
+            scrollToEndPending = true;
+        }
+    }
+
+    private void CompletePendingScroll()
+    {
+        if (!scrollToEndPending || !AutoScrollToEnd)
+        {
+            return;
+        }
+
+        var maximumOffset = Math.Max(0, DisplayPanel.Extent.Height - DisplayPanel.Viewport.Height);
+        DisplayPanel.Offset = new Vector(DisplayPanel.Offset.X, maximumOffset);
+        scrollToEndPending = false;
     }
 
     private void ApplyTextForeground()
@@ -144,7 +215,7 @@ public partial class MarkdownView : UserControl
         => block switch
         {
             HeadingBlock heading => CreateHeading(heading),
-            ParagraphBlock paragraph => CreateInlineTextControl(paragraph.Inline, 14, 22),
+            ParagraphBlock paragraph => CreateInlineTextControl(paragraph.Inline),
             QuoteBlock quote => CreateQuote(quote),
             FencedCodeBlock fenced => CreateCodeBlock(ExtractCode(fenced), fenced.Info),
             CodeBlock code => CreateCodeBlock(ExtractCode(code), null),
@@ -157,8 +228,10 @@ public partial class MarkdownView : UserControl
     private Control CreateHeading(HeadingBlock heading)
     {
         var level = Math.Clamp(heading.Level, 1, 6);
-        var size = level switch { 1 => 22, 2 => 19, 3 => 16, 4 => 14, _ => 13 };
-        var control = CreateInlineTextControl(heading.Inline, size, size + 8, FontWeight.SemiBold, fallbackText: ExtractInlineText(heading.Inline));
+        var control = CreateInlineTextControl(
+            heading.Inline,
+            FontWeight.SemiBold,
+            fallbackText: ExtractInlineText(heading.Inline));
         control.Margin = new Thickness(0, level == 1 ? 0 : 8, 0, 4);
         return control;
     }
@@ -193,8 +266,7 @@ public partial class MarkdownView : UserControl
             {
                 Text = code,
                 FontFamily = MonospaceFontFamily,
-                FontSize = 12,
-                TextWrapping = TextWrapping.NoWrap
+                TextWrapping = TextWrapping.Wrap
             }
         };
 
@@ -205,8 +277,14 @@ public partial class MarkdownView : UserControl
         foreach (var item in list.OfType<ListItemBlock>())
         {
             var row = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") };
-            row.Children.Add(new TextBlock { Text = list.IsOrdered ? $"{index}." : "-", Margin = new Thickness(0, 0, 8, 0), FontSize = 14, LineHeight = 22 });
-            var content = CreateInlineTextControl(FindInline(item), 14, 22, fallbackText: ExtractBlockText(item));
+            row.Children.Add(new TextBlock
+            {
+                Text = list.IsOrdered ? $"{index}." : "-",
+                Margin = new Thickness(0, 0, 8, 0)
+            });
+            var content = CreateInlineTextControl(
+                FindInline(item),
+                fallbackText: ExtractBlockText(item));
             Grid.SetColumn(content, 1);
             row.Children.Add(content);
             host.Children.Add(row);
@@ -256,13 +334,26 @@ public partial class MarkdownView : UserControl
     private static Control? CreateFallback(Block block)
     {
         var text = ExtractBlockText(block);
-        return string.IsNullOrWhiteSpace(text) ? null : new SelectableTextBlock { Text = text, TextWrapping = TextWrapping.Wrap, FontSize = 14, LineHeight = 22 };
+        return string.IsNullOrWhiteSpace(text)
+            ? null
+            : new SelectableTextBlock
+            {
+                Text = text,
+                TextWrapping = TextWrapping.Wrap
+            };
     }
 
-    private Control CreateInlineTextControl(ContainerInline? inline, double fontSize, double lineHeight = 0, FontWeight? fontWeight = null, FontStyle? fontStyle = null, string? fallbackText = null)
+    private Control CreateInlineTextControl(
+        ContainerInline? inline,
+        FontWeight? fontWeight = null,
+        FontStyle? fontStyle = null,
+        string? fallbackText = null)
     {
-        var textBlock = new TextBlock { TextWrapping = TextWrapping.Wrap, FontSize = fontSize };
-        if (lineHeight > 0) textBlock.LineHeight = lineHeight;
+        var textBlock = new TextBlock
+        {
+            TextWrapping = TextWrapping.Wrap,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch
+        };
         if (fontWeight is { } weight) textBlock.FontWeight = weight;
         if (fontStyle is { } style) textBlock.FontStyle = style;
 

@@ -8,6 +8,6 @@
 		x:Class="AstrolonUI.Views.MainWindow"
 		Icon="/Assets/app-logo.ico"
 		Title="AstrolonUI"
-		x:DataType="vm:MainWindowViewModel">
+		x:DataType="vm:MainViewModel">
 	<views:MainView />
 </Window>

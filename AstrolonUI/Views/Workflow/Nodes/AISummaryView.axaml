@@ -1,100 +1,117 @@
 <local:NodeViewBase xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                    mc:Ignorable="d" d:DesignWidth="420" d:DesignHeight="320"
-                    x:Class="AstrolonUI.AISummaryView"
-                    xmlns:local="using:AstrolonUI"
-                    xmlns:vm="using:AstrolonUI.ViewModels"
-                    x:DataType="vm:ShellResultsViewModel"
-                    xmlns:behaviors="using:VeloxDev.WorkflowSystem.AttachedBehaviors"
-                    behaviors:WorkflowSlotLayoutBehavior.IsEnabled="True"
-                    behaviors:WorkflowSlotLayoutBehavior.SlotNames="PART_ResultInputSlot,PART_AgentInputSlot"
-                    behaviors:WorkflowSlotLayoutBehavior.CoordinateHostName="PART_Canvas">
-    <Border CornerRadius="6" BoxShadow="0 2 12 rgba(0,0,0,0.25)">
-        <Grid RowDefinitions="32,*">
-            <Border Grid.Row="0"
-                    Background="{Binding $parent[local:NodeViewBase].HeadBackground}"
-                    CornerRadius="6,6,0,0"
-                    behaviors:WorkflowNodeDragBehavior.CoordinateHostName="PART_Canvas"
-                    behaviors:WorkflowNodeDragBehavior.IsEnabled="True">
-                <Grid ColumnDefinitions="56,*,56">
-                    <TextBlock Grid.Column="1"
-                               Text="{Binding Name}"
-                               Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
-                               FontWeight="Bold"
-                               FontSize="13"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
-                    <CheckBox Grid.Column="2"
-                              Content="AI"
-                              IsChecked="{Binding EnableAISummary, Mode=TwoWay}"
-                              Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
-                              HorizontalAlignment="Center"
-                              VerticalAlignment="Center"/>
-                </Grid>
-            </Border>
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+					xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+					mc:Ignorable="d" d:DesignWidth="420" d:DesignHeight="320"
+					x:Class="AstrolonUI.AISummaryView"
+					xmlns:local="using:AstrolonUI"
+					xmlns:vm="using:AstrolonUI.ViewModels"
+					x:DataType="vm:ShellResultsViewModel"
+					xmlns:behaviors="using:VeloxDev.WorkflowSystem.AttachedBehaviors"
+					behaviors:WorkflowSlotLayoutBehavior.IsEnabled="True"
+					behaviors:WorkflowSlotLayoutBehavior.SlotNames="PART_ResultInputSlot,PART_AgentInputSlot"
+					behaviors:WorkflowSlotLayoutBehavior.CoordinateHostName="PART_Canvas">
+	<Border CornerRadius="6" BoxShadow="0 2 12 rgba(0,0,0,0.25)">
+		<Grid RowDefinitions="32,*">
+			<Border Grid.Row="0"
+					Background="{Binding $parent[local:NodeViewBase].HeadBackground}"
+					CornerRadius="6,6,0,0"
+					behaviors:WorkflowNodeDragBehavior.CoordinateHostName="PART_Canvas"
+					behaviors:WorkflowNodeDragBehavior.IsEnabled="True">
+				<Grid ColumnDefinitions="56,*,56">
+					<TextBlock Grid.Column="1"
+							   Text="{Binding Name}"
+							   Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+							   FontWeight="Bold"
+							   FontSize="13"
+							   HorizontalAlignment="Center"
+							   VerticalAlignment="Center"/>
+					<CheckBox Grid.Column="2"
+							  Content="AI"
+							  IsChecked="{Binding EnableAISummary, Mode=TwoWay}"
+							  Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+							  HorizontalAlignment="Center"
+							  VerticalAlignment="Center"/>
+				</Grid>
+			</Border>
 
-            <Grid Grid.Row="1" Background="{Binding $parent[local:NodeViewBase].HeadBackground}" ColumnDefinitions="24,*">
-                <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="18">
-                    <local:SlotView x:Name="PART_ResultInputSlot"
-                                    Width="14" Height="14"
-                                    HorizontalAlignment="Center"
-                                    Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
-                                    DataContext="{Binding ResultInputSlot}" />
-                    <local:SlotView x:Name="PART_AgentInputSlot"
-                                    Width="14" Height="14"
-                                    HorizontalAlignment="Center"
-                                    Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
-                                    DataContext="{Binding AgentInputSlot}" />
-                </StackPanel>
-                <Border Grid.Column="1" Margin="8" Padding="8" CornerRadius="4" Background="#12000000">
-                    <Grid>
-                        <TextBlock Text="Waiting for shell result."
-                                   IsVisible="{Binding !HasResults}"
-                                   Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
-                                   FontStyle="Italic"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
-                        <ScrollViewer IsVisible="{Binding HasResults}"
-                                      VerticalScrollBarVisibility="Auto"
-                                      HorizontalScrollBarVisibility="Disabled">
-                            <ItemsControl ItemsSource="{Binding ResultGroups}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <StackPanel Spacing="4"/>
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="vm:ShellResultGroupViewModel">
-                                        <Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
-                                                  Background="#181818"
-                                                  HorizontalAlignment="Stretch">
-                                            <Expander.Header>
-                                                <Grid ColumnDefinitions="*,Auto">
-                                                    <TextBlock Text="{Binding Header}"
-                                                               Foreground="#d8d8d8"
-                                                               FontSize="11"
-                                                               TextTrimming="CharacterEllipsis"/>
-                                                    <TextBlock Grid.Column="1"
-                                                               Text="{Binding Status}"
-                                                               Foreground="#8f8f8f"
-                                                               FontSize="10"
-                                                               Margin="8,0,0,0"/>
-                                                </Grid>
-                                            </Expander.Header>
-                                            <Border Padding="8,4,8,8">
-                                                <local:MarkdownView DataContext="{Binding Document}"/>
-                                            </Border>
-                                        </Expander>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </ScrollViewer>
-                    </Grid>
-                </Border>
-            </Grid>
-        </Grid>
-    </Border>
+			<Grid Grid.Row="1" Background="{Binding $parent[local:NodeViewBase].HeadBackground}" ColumnDefinitions="24,*">
+				<StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="18">
+					<local:SlotView x:Name="PART_ResultInputSlot"
+									Width="14" Height="14"
+									HorizontalAlignment="Center"
+									Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+									DataContext="{Binding ResultInputSlot}" />
+					<local:SlotView x:Name="PART_AgentInputSlot"
+									Width="14" Height="14"
+									HorizontalAlignment="Center"
+									Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+									DataContext="{Binding AgentInputSlot}" />
+				</StackPanel>
+				<Border Grid.Column="1" Margin="8" Padding="8" CornerRadius="4">
+					<Grid>
+						<TextBlock Text="Waiting for shell result."
+								   IsVisible="{Binding !HasResults}"
+								   Background="Transparent"
+								   Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+								   FontStyle="Italic"
+								   HorizontalAlignment="Center"
+								   VerticalAlignment="Center"/>
+						<ScrollViewer x:Name="ResultListScroll"
+									  IsVisible="{Binding HasResults}"
+									  VerticalScrollBarVisibility="Auto"
+									  HorizontalScrollBarVisibility="Disabled">
+							<ItemsControl ItemsSource="{Binding ResultGroups}"
+										  Width="{Binding #ResultListScroll.Viewport.Width}"
+										  HorizontalAlignment="Stretch">
+								<ItemsControl.ItemsPanel>
+									<ItemsPanelTemplate>
+										<StackPanel />
+									</ItemsPanelTemplate>
+								</ItemsControl.ItemsPanel>
+								<ItemsControl.ItemTemplate>
+									<DataTemplate DataType="vm:ShellResultGroupViewModel">
+										<Expander IsExpanded="{Binding IsExpanded, Mode=TwoWay}"
+												  Background="Transparent"
+												  Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+												  HorizontalAlignment="Stretch"
+												  HorizontalContentAlignment="Stretch">
+											<Expander.Header>
+												<Grid ColumnDefinitions="*,Auto" Background="{Binding $parent[local:NodeViewBase].HeadBackground}">
+													<TextBlock Text="{Binding Header}"
+															   Background="Transparent"
+															   Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+															   FontSize="14"
+															   TextTrimming="CharacterEllipsis"/>
+													<TextBlock Grid.Column="1"
+															   Text="{Binding Status}"
+															   Background="Transparent"
+															   Foreground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+															   Opacity="0.65"
+															   FontSize="14"
+															   Margin="8,0,0,0"/>
+												</Grid>
+											</Expander.Header>
+
+											<Border Height="180"
+													Background="Transparent"
+													ClipToBounds="True">
+												<local:MarkdownView DataContext="{Binding Document}"
+																	UseThemeColors="False"
+																	Background="Transparent"
+																	TextForeground="{Binding $parent[local:NodeViewBase].HeadForeground}"
+																	HorizontalAlignment="Stretch"
+																	VerticalAlignment="Stretch"/>
+											</Border>
+										</Expander>
+									</DataTemplate>
+								</ItemsControl.ItemTemplate>
+							</ItemsControl>
+						</ScrollViewer>
+					</Grid>
+				</Border>
+			</Grid>
+		</Grid>
+	</Border>
 </local:NodeViewBase>
 

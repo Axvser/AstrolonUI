@@ -1,6 +1,7 @@
 using AstrolonUI.ViewModels.Workflow.Nodes.AI.Models;
 using AstrolonUI.ViewModels.Workflow.Trees.Services;
 using Avalonia.Threading;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -38,6 +39,8 @@ public partial class TreeViewModel : IOpenAIProvider
         InitializeWorkflow();
         EnsureRefreshLoop();
         InitializeMonoBehaviour();
+        WorkspaceName = "Untitled";
+        LocalPath = string.Empty;
         EnvironmentVariableName = "API_KEY_DEEPSEEK";
         Endpoint = "https://api.deepseek.com";
         Model = "deepseek-v4-flash";
@@ -53,6 +56,10 @@ public partial class TreeViewModel : IOpenAIProvider
     }
 
     [VeloxProperty] private bool isWorkflowRunning = false;
+
+    [VeloxProperty] public partial string WorkspaceName { get; set; }
+
+    [VeloxProperty] public partial string LocalPath { get; set; }
 
     [VeloxProperty] public partial bool UseStreamingAgentResponse { get; set; }
 
