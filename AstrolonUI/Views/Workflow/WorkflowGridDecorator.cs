@@ -415,7 +415,14 @@ public partial class WorkflowGridDecorator : Decorator, IWorkflowGridDecorator
         if (ReferenceEquals(session.ActiveDecorator, this) && contentRect.Contains(point) && DataContext is TreeViewModel tree)
         {
             var anchor = ToWorkflowAnchor(point, tree);
-            tree.CreateNodeTool(session.Tool, anchor);
+            if (tree.TryCreateNodeTool(
+                    session.Tool,
+                    anchor,
+                    out var node) &&
+                node is not null)
+            {
+                tree.CreateNodeCommand.Execute(node);
+            }
         }
 
         CancelToolDrag();

@@ -185,10 +185,17 @@ public partial class TreeViewModel : IOpenAIProvider
         }
     }
 
-    public bool CreateNodeTool(NodeToolViewModel tool, Anchor anchor)
+    public bool TryCreateNodeTool(
+        NodeToolViewModel tool,
+        Anchor anchor,
+        out IWorkflowNodeViewModel? node)
     {
+        ArgumentNullException.ThrowIfNull(tool);
+        ArgumentNullException.ThrowIfNull(anchor);
 
-        if (Activator.CreateInstance(tool.NodeType) is not IWorkflowNodeViewModel node)
+        node = Activator.CreateInstance(tool.NodeType)
+            as IWorkflowNodeViewModel;
+        if (node is null)
         {
             return false;
         }
@@ -209,7 +216,6 @@ public partial class TreeViewModel : IOpenAIProvider
             }
         }
 
-        CreateNodeCommand.Execute(node);
         return true;
     }
 
@@ -217,7 +223,7 @@ public partial class TreeViewModel : IOpenAIProvider
     {
         var tools = typeof(TreeViewModel).Assembly.GetTypes()
             .Where(IsWorkflowNodeType)
-            .Select(CreateNodeTool)
+            .Select(CreateNodeToolDescriptor)
             .OrderBy(tool => GetGroupName(tool.NodeType))
             .ThenBy(tool => tool.Name)
             .GroupBy(tool => GetGroupName(tool.NodeType))
@@ -237,7 +243,7 @@ public partial class TreeViewModel : IOpenAIProvider
                .Any(attribute => attribute.GetType().IsGenericType &&
                                  attribute.GetType().GetGenericTypeDefinition().Name.StartsWith("NodeAttribute", StringComparison.Ordinal));
 
-    private static NodeToolViewModel CreateNodeTool(Type type)
+    private static NodeToolViewModel CreateNodeToolDescriptor(Type type)
     {
         var contexts = type.GetCustomAttributes<AgentContextAttribute>(inherit: false)
             .Where(attr => attr.Language == AgentLanguages.Chinese)

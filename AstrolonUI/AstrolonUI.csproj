@@ -23,9 +23,7 @@
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
     <PackageReference Include="Markdig" />
     <PackageReference Include="VeloxDev.Avalonia" />
-    <PackageReference Include="VeloxDev.Core" />
     <PackageReference Include="VeloxDev.Core.Extension" />
-    <PackageReference Include="VeloxDev.Core.Generator" />
   </ItemGroup>
 </Project>
 
