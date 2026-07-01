@@ -4,12 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using System;
 using System.ComponentModel;
-using System.Threading.Tasks;
 using VeloxDev.DynamicTheme;
-
-#if BROWSER
-using System.Runtime.InteropServices.JavaScript;
-#endif
 
 namespace AstrolonUI;
 
@@ -21,7 +16,6 @@ public partial class MarkdownView : UserControl
     private bool ready;
     private IBrush themeBackground = Brushes.Transparent;
     private IBrush themeTextForeground = Brushes.White;
-    private NativeWebView? webView;
 
     public static readonly StyledProperty<bool> AutoScrollToEndProperty =
         AvaloniaProperty.Register<MarkdownView, bool>(nameof(AutoScrollToEnd));
@@ -60,15 +54,12 @@ public partial class MarkdownView : UserControl
         InitializeTheme();
         InitializeComponent();
 
-        // 所有平台：NativeWebView 渲染 Markdown
-        webView = new NativeWebView { Background = new SolidColorBrush(Color.FromRgb(0x1e, 0x1e, 0x1e)) };
-        ContentRoot.Children.Add(webView);
+        // NativeWebView 已由 XAML 声明，只需配置事件和导航
         webView.NavigationCompleted += OnNavComplete;
 
 #if BROWSER
-        // Browser: JS 端会在应用启动后自动导航 iframe
+        webView.Source = new Uri("http://localhost:5235/standalone-md.html");
 #else
-        // Desktop: 用 file:// 加载本地页面
         LoadHtml();
 #endif
         DataContextChanged += (_, _) => AttachDocument();
@@ -94,13 +85,7 @@ public partial class MarkdownView : UserControl
 
     private void PushMarkdown()
     {
-#if BROWSER
-        // Browser: 通过 JSImport 渲染
-        var text = document?.Text;
-        if (!string.IsNullOrWhiteSpace(text))
-            RenderMarkdown(text);
-#else
-        if (!ready || webView is null) return;
+        if (!ready) return;
         var text = document?.Text;
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -111,7 +96,6 @@ public partial class MarkdownView : UserControl
                           .Replace("\n", "\\n").Replace("\r", "\\r");
         try { webView.InvokeScript($"renderMarkdown('{escaped}')"); }
         catch (Exception ex) { Console.WriteLine($"[MarkdownView] ❌ {ex.Message}"); }
-#endif
     }
 
 #if !BROWSER
@@ -120,7 +104,7 @@ public partial class MarkdownView : UserControl
         var webDir = System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "web");
         var indexPath = System.IO.Path.Combine(webDir, "index.html");
         if (System.IO.File.Exists(indexPath))
-            webView!.Source = new Uri("file:///" + indexPath.Replace("\\", "/"));
+            webView.Source = new Uri("file:///" + indexPath.Replace("\\", "/"));
     }
 #endif
 
@@ -129,10 +113,4 @@ public partial class MarkdownView : UserControl
         ready = true;
         PushMarkdown();
     }
-
-#if BROWSER
-    // === JSImport: 渲染 Markdown 到浮动预览面板 ===
-    [JSImport("renderMarkdown", "main.js")]
-    internal static partial void RenderMarkdown(string text);
-#endif
 }

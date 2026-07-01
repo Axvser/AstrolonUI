@@ -3,6 +3,5 @@
              xmlns:vm="using:AstrolonUI.ViewModels"
              x:Class="AstrolonUI.MarkdownView"
              x:DataType="vm:MarkdownDocumentViewModel">
-    <Grid x:Name="ContentRoot">
-    </Grid>
+    <NativeWebView x:Name="webView" Background="#1e1e1e" />
 </UserControl>
