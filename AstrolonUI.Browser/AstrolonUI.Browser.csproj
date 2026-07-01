@@ -11,6 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AstrolonUI\AstrolonUI.csproj" />
+    <ProjectReference Include="..\AstrolonUI\AstrolonUI.csproj">
+      <DefineConstants>BROWSER</DefineConstants>
+      <AdditionalProperties>BrowserBuilding=true</AdditionalProperties>
+    </ProjectReference>
   </ItemGroup>
 </Project>

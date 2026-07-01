@@ -2,11 +2,16 @@ using AstrolonUI.ViewModels.Workflow.Common;
 using AstrolonUI.ViewModels.Workflow.Nodes.AI.Models;
 using AstrolonUI.ViewModels.Workflow.Nodes.Terminal.Models;
 using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using VeloxDev.AI;
+using VeloxDev.AI.MCP;
 using VeloxDev.AI.Workflow;
 using VeloxDev.WorkflowSystem;
 
@@ -53,7 +58,7 @@ public class AgentHelper() : TreeHelper<TreeViewModel>(200), IChatCallBackProvid
         ChatClientAgent? currentAgent = null;
         try
         {
-            var medium = BuildChatMedium(Component, message);
+            var medium = await BuildChatMedium(Component, message);
             currentAgent = await EnsureAgentAsync(Component, medium);
             session ??= await currentAgent.CreateSessionAsync();
             medium.Session = session;
@@ -97,9 +102,12 @@ public class AgentHelper() : TreeHelper<TreeViewModel>(200), IChatCallBackProvid
         return agent;
     }
 
-    private ChatMedium BuildChatMedium(TreeViewModel tree, string message)
+    [Description("Get Base Directory Where the EXE running.")]
+    private static string GetBaseDirectory() => AppDomain.CurrentDomain.BaseDirectory;
+
+    private async Task<ChatMedium> BuildChatMedium(TreeViewModel tree, string message)
     {
-        var scope = tree.AsAgentScope()
+        var treeScope = tree.AsAgentScope()
             .WithPromptLanguage(AgentLanguages.Chinese)
             .WithOutputLanguage(AgentLanguages.Chinese)
             .WithAutoDiscovery(assemblyName: "AstrolonUI")
@@ -111,11 +119,67 @@ public class AgentHelper() : TreeHelper<TreeViewModel>(200), IChatCallBackProvid
             .WithConfirmationHandler(tree.HandleAgentConfirmationAsync)
             .WithInteractionSafety(3);
 
+        var mcpScope = new McpScope()
+            .WithMcpRoot(".env/mcp/");
+
+        var mcpTools = await mcpScope.LoadAsync(
+        [
+            new McpServerConfiguration
+            {
+                Name = "SMTP Email Tool",
+                Description = "Send emails via SMTP. Supports attachments and CID inline images.",
+                RunMode = McpServerRunMode.Dotnet,
+                Package = "sharp-email-mcp/SharpEmailMcp.dll",
+                Arguments =
+                [
+                    "--smtp-user", Environment.GetEnvironmentVariable("SMTP_USER")!,
+                    "--smtp-pass", Environment.GetEnvironmentVariable("SMTP_PASS")!,
+                ],
+            },
+            new McpServerConfiguration
+            {
+                Name = "Filesystem",
+                Description = "Read, write, search files, and list directories on the local filesystem.",
+                RunMode = McpServerRunMode.Npm,
+                Package = "@modelcontextprotocol/server-filesystem",
+                Arguments =
+                [
+                    @"E:\VisualStudio\Projects\VeloxDev"
+                ],
+            },
+            new McpServerConfiguration
+            {
+                Name = "Sequential Thinking",
+                Description = "Step-by-step reasoning for complex problem solving.",
+                RunMode = McpServerRunMode.Npm,
+                Package = "@modelcontextprotocol/server-sequential-thinking",
+            },
+            new McpServerConfiguration
+            {
+                Name = "Browser Automation",
+                Description = "Browser automation via Puppeteer: screenshot, click, navigate, extract data.",
+                RunMode = McpServerRunMode.Npm,
+                Package = "@modelcontextprotocol/server-puppeteer",
+            },
+            new McpServerConfiguration
+            {
+                Name = "CLI Tools",
+                Description = "Execute CLI commands and locate executables via CliWrap.",
+                RunMode = McpServerRunMode.Dotnet,
+                Package = "sharp-cli-mcp/SharpCliMcp.dll",
+            },
+        ]);
+
         return new ChatMedium
         {
-            Prompt = scope.ProvideProgressiveContextPrompt(),
+            Prompt = treeScope.ProvideProgressiveContextPrompt(),
             Message = message,
-            Tools = scope.ProvideTools(),
+            Tools = 
+            [
+                .. treeScope.ProvideTools(),
+                .. mcpTools,
+                AIFunctionFactory.Create(GetBaseDirectory)
+            ],
             AllowStreaming = tree.UseStreamingAgentResponse
         };
     }
@@ -128,7 +192,7 @@ public class AgentHelper() : TreeHelper<TreeViewModel>(200), IChatCallBackProvid
             return;
         }
 
-        var medium = BuildChatMedium(Component, string.Empty);
+        var medium = await BuildChatMedium(Component, string.Empty);
         var currentAgent = await EnsureAgentAsync(Component, medium);
         using var document = JsonDocument.Parse(serializedSession);
         session = await currentAgent.DeserializeSessionAsync(

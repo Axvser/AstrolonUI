@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html class="theme-dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Viewer</title>
+    <link rel="stylesheet" href="./lib/katex.min.css">
+    <link rel="stylesheet" href="./lib/github.min.css">
+    <link rel="stylesheet" href="/web/renderer.css">
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; background: #1e1e1e; color: #d4d4d4; }
+        #preview { padding: 16px 20px; font-size: 14px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div id="preview"><p style="color:#888;text-align:center;margin-top:60px;">⏳ 加载中...</p></div>
+    <script src="./lib/markdown-it.min.js"></script>
+    <script src="./lib/markdown-it-footnote.min.js"></script>
+    <script src="./lib/markdown-it-task-lists.min.js"></script>
+    <script src="./lib/highlight.min.js"></script>
+    <script src="./lib/katex.min.js"></script>
+    <script src="./lib/mermaid.min.js"></script>
+    <script src="/web/renderer.js"></script>
+    <script>
+        // 支持从 C# InvokeScript 调用
+        window.renderMarkdown = function(text) {
+            var preview = document.getElementById('preview');
+            if (!preview) return;
+            try {
+                preview.innerHTML = window.md.render(text || '');
+                preview.querySelectorAll('.mermaid').forEach(function(el) {
+                    try { window.mermaid.run({ nodes: [el] }); } catch(e) {}
+                });
+                console.log('[WebView] ✅ 渲染完成');
+            } catch(e) {
+                console.error('[WebView] ❌ ' + e.message);
+                preview.innerHTML = '<pre>' + window.escapeHtml(text || '') + '</pre>';
+            }
+        };
+        // 初始显示测试内容
+        var testMd = "# 独立渲染测试 🎯\n\n**粗体** *斜体* ~~删除线~~\n\n```csharp\nConsole.WriteLine(\"独立 WebView 模式\");\n```\n\n行内公式：$E = mc^2$\n\n- [x] 独立测试\n- [ ] 完成";
+        window.renderMarkdown(testMd);
+        document.title = "✅ 独立渲染完成";
+    </script>
+</body>
+</html>
